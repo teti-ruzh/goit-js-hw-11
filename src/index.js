@@ -33,34 +33,22 @@ function onSearch(event) {
   if (!loadMoreBtn.refs.button.hidden) {
     loadMoreBtn.hide();
   }
-  // loadMoreBtn.show();
+  
   imgApiService.resetPage();
   clearGalleryContainer();
   getImages();
 }
 
-// function getImages() {
-//   imgApiService.getImg().then(({ hits }) => {
-//     if (hits.length > 0) {
-//       loadMoreBtn.show();
-//       loadMoreBtn.disable();
-//       appendGalleryMarkup({ hits });
-//       loadMoreBtn.enable();
-//     } else {
-//       loadMoreBtn.hide();
-//       Notify.failure(
-//         'Sorry, there are no images matching your search query. Please try again.'
-//       );
-//     }
-//   });
-// }
-
-function getImages() {
-  imgApiService.getImg().then(({ hits, totalHits }) => {
+async function getImages() {
+  try {
+  const images = await imgApiService.getImg();
+ 
+    const hits = images.hits;
+    const totalHits = images.totalHits;
     if (hits.length > 0) {
       loadMoreBtn.show();
       loadMoreBtn.disable();
-      appendGalleryMarkup({ hits });
+      appendGalleryMarkup(hits);
       Notify.success(`Hooray! We found ${totalHits} images.`);
       loadMoreBtn.enable();
       if (hits.length === totalHits) {
@@ -75,22 +63,29 @@ function getImages() {
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
-  });
-}
+  } catch (error) {
+    console.log(error.message);
+  }
+  };
 
-function addImages() {
+  async function addImages() {
+  try{
   loadMoreBtn.disable();
-  imgApiService.getImg().then(({ hits, totalHits }) => {
-    appendGalleryMarkup({ hits });
+  const images = await imgApiService.getImg();
+   const hits = images.hits;
+   const totalHits = images.totalHits;
+    appendGalleryMarkup(hits);
     loadMoreBtn.enable();
     if (imgApiService.imgQty >= totalHits) {
       Notify.info("We're sorry, but you've reached the end of search results.");
       loadMoreBtn.hide();
-    }
-  });
+    };
+} catch (error) {
+  console.log(error.message);
+}
 }
 
-function appendGalleryMarkup({ hits }) {
+function appendGalleryMarkup(hits) {
   const markup = hits
     .map(
       ({
